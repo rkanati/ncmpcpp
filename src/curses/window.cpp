@@ -334,6 +334,10 @@ NC::Format reverseFormat(NC::Format fmt)
 		return NC::Format::NoUnderline;
 	case NC::Format::NoUnderline:
 		return NC::Format::Underline;
+	case NC::Format::Italic:
+		return NC::Format::NoItalic;
+	case NC::Format::NoItalic:
+		return NC::Format::Italic;
 	case NC::Format::Reverse:
 		return NC::Format::NoReverse;
 	case NC::Format::NoReverse:
@@ -464,6 +468,7 @@ Window::Window(size_t startx, size_t starty, size_t width, size_t height,
 	  m_escape_terminal_sequences(true),
 	  m_bold_counter(0),
 	  m_underline_counter(0),
+    m_italic_counter(0),
 	  m_reverse_counter(0),
 	  m_alt_charset_counter(0)
 {
@@ -511,6 +516,7 @@ Window::Window(const Window &rhs)
 , m_escape_terminal_sequences(rhs.m_escape_terminal_sequences)
 , m_bold_counter(rhs.m_bold_counter)
 , m_underline_counter(rhs.m_underline_counter)
+, m_italic_counter(rhs.m_italic_counter)
 , m_reverse_counter(rhs.m_reverse_counter)
 , m_alt_charset_counter(rhs.m_alt_charset_counter)
 {
@@ -535,6 +541,7 @@ Window::Window(Window &&rhs)
 , m_escape_terminal_sequences(rhs.m_escape_terminal_sequences)
 , m_bold_counter(rhs.m_bold_counter)
 , m_underline_counter(rhs.m_underline_counter)
+, m_italic_counter(rhs.m_italic_counter)
 , m_reverse_counter(rhs.m_reverse_counter)
 , m_alt_charset_counter(rhs.m_alt_charset_counter)
 {
@@ -560,6 +567,7 @@ Window &Window::operator=(Window rhs)
 	std::swap(m_escape_terminal_sequences, rhs.m_escape_terminal_sequences);
 	std::swap(m_bold_counter, rhs.m_bold_counter);
 	std::swap(m_underline_counter, rhs.m_underline_counter);
+  std::swap(m_italic_counter, rhs.m_italic_counter);
 	std::swap(m_reverse_counter, rhs.m_reverse_counter);
 	std::swap(m_alt_charset_counter, rhs.m_alt_charset_counter);
 	return *this;
@@ -736,6 +744,11 @@ void Window::bold(bool bold_state) const
 void Window::underline(bool underline_state) const
 {
 	(underline_state ? wattron : wattroff)(m_window, A_UNDERLINE);
+}
+
+void Window::italic(bool italic_state) const
+{
+  (italic_state ? wattron : wattroff)(m_window, A_ITALIC);
 }
 
 void Window::reverse(bool reverse_state) const
@@ -1366,6 +1379,12 @@ Window &Window::operator<<(Format format)
 			break;
 		case Format::NoUnderline:
 			decrease_flag(*this, m_underline_counter, &Window::underline);
+			break;
+    case Format::Italic:
+			increase_flag(*this, m_italic_counter, &Window::italic);
+			break;
+    case Format::NoItalic:
+			decrease_flag(*this, m_italic_counter, &Window::italic);
 			break;
 		case Format::Reverse:
 			increase_flag(*this, m_reverse_counter, &Window::reverse);
